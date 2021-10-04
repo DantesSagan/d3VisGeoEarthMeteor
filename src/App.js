@@ -2,6 +2,7 @@
 import { useEffect } from 'react';
 
 import * as topojson from 'topojson-client';
+import { pointer } from 'd3-selection';
 import * as d3 from 'd3';
 
 import './App.css';
@@ -45,6 +46,12 @@ export default function App() {
         .scale(200)
         .translate([width / 1.9, height / 1.5]);
 
+      const tooltip = d3
+        .select('body')
+        .append('div')
+        .attr('id', 'tooltip')
+        .style('visibility', 'hidden');
+
       svg
         .selectAll('.dot')
         .data(dataMeteor)
@@ -69,6 +76,41 @@ export default function App() {
         .attr('r', 2)
         .style('fill', (item) => {
           return color(item.recclass);
+        })
+        .on('mouseover', (event, item) => {
+          const [x, y] = pointer(event);
+
+          const formatYear = d3.timeFormat('%Y');
+
+          const formatMass = (num) => {
+            return num.toString().replace(/(?=\d)(?=(\d{3})+(?!\d))/g, ' ');
+          };
+          const formatThousands = () => {
+            if (item.mass > 10000) {
+              return item.mass / 100;
+            } else if (item.mass < 10000) {
+              return item.mass / 1000;
+            }
+            //  else if (item.mass > 1000) {
+            //   return item.mass ;
+            // }
+            return item.mass;
+          };
+          tooltip.transition().duration(200).style('visibility', 'visible');
+          tooltip
+            .html(
+              `Year: ${formatYear(new Date(item.year))}<br /> Name: ${
+                item.name
+              } <br /> Mass: ${formatMass(formatThousands())} <br /> Class: ${
+                item.recclass
+              }`
+            )
+            .style('left', x + 'px')
+            .style('top', y - 80 + 'px')
+            .style('position', 'absolute');
+        })
+        .on('mouseout', () => {
+          tooltip.transition().duration(200).style('visibility', 'hidden');
         });
     };
 
