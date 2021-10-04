@@ -31,12 +31,45 @@ export default function App() {
 
       let path = d3.geoPath().projection(projection);
 
+      let color = d3.scaleOrdinal(d3.schemeCategory10);
       svg
         .selectAll('path')
         .data(dataEarth)
         .enter()
         .append('path')
         .attr('d', path);
+
+      var longLat = d3
+        .geoMercator()
+        .center([23.09, -49.06])
+        .scale(200)
+        .translate([width / 1.9, height / 1.5]);
+
+      svg
+        .selectAll('.dot')
+        .data(dataMeteor)
+        .enter()
+        .append('circle')
+        .attr('class', 'dot')
+        .attr('data-name', (item) => {
+          return item.name;
+        })
+        .attr('data-recclass', (item) => {
+          return item.recclass;
+        })
+        .attr('data-year', (item) => {
+          return item.year;
+        })
+        .attr('cx', (item) => {
+          return longLat([item.reclong, item.reclat])[0];
+        })
+        .attr('cy', (item) => {
+          return longLat([item.reclong, item.reclat])[1];
+        })
+        .attr('r', 2)
+        .style('fill', (item) => {
+          return color(item.recclass);
+        });
     };
 
     d3.json(geoEarth).then((data, error) => {
@@ -60,7 +93,7 @@ export default function App() {
   return (
     <div className='App'>
       <h1>Visualization fall of meteors on Earth </h1>
-      <svg style={{border:'1px solid black'}}></svg>
+      <svg style={{ border: '1px solid black' }}></svg>
     </div>
   );
 }
