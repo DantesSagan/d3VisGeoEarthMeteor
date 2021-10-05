@@ -73,7 +73,7 @@ export default function App() {
         .attr('cy', (item) => {
           return longLat([item.reclong, item.reclat])[1];
         })
-        .attr('r', 2)
+        .attr('r', 3)
         .style('fill', (item) => {
           return color(item.recclass);
         })
