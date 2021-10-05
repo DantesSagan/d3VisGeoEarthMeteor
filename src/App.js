@@ -193,8 +193,7 @@ export default function App() {
         .selectAll('g')
         .data(classes)
         .join('g')
-        .attr('id', 'legend')
-        .style('position', 'fixed');
+        .attr('id', 'legend');
 
       legend
         .append('rect')
@@ -234,12 +233,19 @@ export default function App() {
   return (
     <div className='App'>
       <h1>
-        Visualization fall of meteors on Earth <br />
+        Visualization fall of meteorite on Earth <br />
         from 1700 year's by 2013 year.
       </h1>
       <svg style={{ border: '1px solid black' }}>
         {' '}
-        <svg ref={legendRef} style={{}}></svg>
+        <text
+          x='100'
+          y='50'
+          style={{ fontSize: '2em', textDecoration: 'underline' }}
+        >
+          Meteorite classes
+        </text>
+        <svg ref={legendRef}></svg>
       </svg>
     </div>
   );
