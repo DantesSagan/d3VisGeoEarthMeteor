@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import * as topojson from 'topojson-client';
 import { pointer } from 'd3-selection';
@@ -16,6 +16,7 @@ export default function App() {
   let dataMeteor;
   let dataEarth;
 
+  const legendRef = useRef(null);
   const { drawCanvas, width, height } = DrawCanvas();
 
   useEffect(() => {
@@ -32,7 +33,70 @@ export default function App() {
 
       let path = d3.geoPath().projection(projection);
 
-      let color = d3.scaleOrdinal(d3.schemeCategory10);
+      // 10 different color's
+      // let color = d3.scaleOrdinal(d3.schemeCategory10);
+
+      // 50 different color's
+      let colors = [
+        '#E52B50',
+        '#FFBF00',
+        '#9966CC',
+        '#FBCEB1',
+        '#7FFFD4',
+        '#007FFF',
+        '#89CFF0',
+        '#F5F5DC',
+        '#CB4154',
+        '#FFFFFF',
+        '#0000FF',
+        '#0095B6',
+        '#8A2BE2',
+        '#DE5D83',
+        '#CD7F32',
+        '#964B00',
+        '#800020',
+        '#702963',
+        '#960018',
+        '#DE3163',
+        '#007BA7',
+        '#F7E7CE',
+        '#7FFF00',
+        '#7B3F00',
+        '#0047AB',
+        '#6F4E37',
+        '#B87333',
+        '#FF7F50',
+        '#DC143C',
+        '#00FFFF',
+        '#EDC9Af',
+        '#7DF9FF',
+        '#50C878',
+        '#00FF3F',
+        '#FFD700',
+        '#808080',
+        '#008000',
+        '#3FFF00',
+        '#4B0082',
+        '#FFFFF0',
+        '#00A86B',
+        '#29AB87',
+        '#B57EDC',
+        '#FFF700',
+        '#C8A2C8',
+        '#BFFF00',
+        '#FF00FF',
+        '#FF00AF',
+        '#800000',
+        '#E0B0FF',
+        '#000080',
+        '#CC7722',
+        '#808000',
+        '#FF6600',
+        '#FF4500',
+      ];
+
+      let colorScale = d3.scaleOrdinal().range(colors);
+
       svg
         .selectAll('path')
         .data(dataEarth)
@@ -51,6 +115,10 @@ export default function App() {
         .append('div')
         .attr('id', 'tooltip')
         .style('visibility', 'hidden');
+
+      const formatMass = (num) => {
+        return num.toString().replace(/(?=\d)(?=(\d{3})+(?!\d))/g, ' ');
+      };
 
       svg
         .selectAll('.dot')
@@ -75,16 +143,13 @@ export default function App() {
         })
         .attr('r', 3)
         .style('fill', (item) => {
-          return color(item.recclass);
+          return colorScale(item.recclass);
         })
         .on('mouseover', (event, item) => {
           const [x, y] = pointer(event);
 
           const formatYear = d3.timeFormat('%Y');
 
-          const formatMass = (num) => {
-            return num.toString().replace(/(?=\d)(?=(\d{3})+(?!\d))/g, ' ');
-          };
           const formatThousands = () => {
             if (item.mass > 10000) {
               return item.mass / 100;
@@ -112,6 +177,40 @@ export default function App() {
         .on('mouseout', () => {
           tooltip.transition().duration(200).style('visibility', 'hidden');
         });
+
+      const legendContainer = d3.select(legendRef.current);
+      legendContainer.selectAll('g').remove();
+
+      let classes = dataMeteor.map((item) => item.recclass);
+
+      classes = classes.filter(
+        (classes, index, self) => self.indexOf(classes) === index
+      );
+
+      legendContainer.attr('width', width).attr('height', height);
+
+      const legend = legendContainer
+        .selectAll('g')
+        .data(classes)
+        .join('g')
+        .attr('id', 'legend')
+        .style('position', 'fixed');
+
+      legend
+        .append('rect')
+        .attr('width', 12)
+        .attr('height', 12)
+        .attr('x', 12)
+        .attr('y', (item, i) => 12 * 2 * i)
+        .attr('fill', (item) => colorScale(item));
+
+      legend
+        .append('text')
+        .attr('transform', `translate(0, ${12})`)
+        .attr('x', 12 * 3)
+        .attr('y', (_, i) => 12 * 2 * i)
+        .style('font-size', 12)
+        .text((item) => item);
     };
 
     d3.json(geoEarth).then((data, error) => {
@@ -134,8 +233,14 @@ export default function App() {
   }, []);
   return (
     <div className='App'>
-      <h1>Visualization fall of meteors on Earth </h1>
-      <svg style={{ border: '1px solid black' }}></svg>
+      <h1>
+        Visualization fall of meteors on Earth <br />
+        from 1700 year's by 2013 year.
+      </h1>
+      <svg style={{ border: '1px solid black' }}>
+        {' '}
+        <svg ref={legendRef} style={{}}></svg>
+      </svg>
     </div>
   );
 }
